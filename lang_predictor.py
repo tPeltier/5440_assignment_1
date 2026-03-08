@@ -1,4 +1,3 @@
-from sys import exit
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -31,28 +30,23 @@ def lang_to_label(df):
 def str_to_ord_arr(word):
     return [ord(char) for char in word.lower()]
 
-print(preprocessing_df.sample(10))
-
-# FIX:ed? by use of str_to_ord_arr
-# the txt files are lowercase but the test data is uppercase
-# for now just upppering the input
-# training_df["word"] = training_df["word"].str.upper()
+# print(preprocessing_df.sample(10))
 
 preprocessing_df = prune_len(preprocessing_df, 5)
 preprocessing_df = add_ord_arr(preprocessing_df)
 preprocessing_df = lang_to_label(preprocessing_df)
-print(preprocessing_df.sample(10))
+# print(preprocessing_df.sample(10))
 
 testing_df = preprocessing_df.sample(frac=0.2)
-print(testing_df.info())
+# print(testing_df.info())
 
 training_df = preprocessing_df.drop(testing_df.index)
-print(training_df.info())
+# print(training_df.info())
 
 training = np.array(training_df["ord"].tolist())
 target = np.array(training_df["label"].tolist())
-print(training)
-print(target)
+# print(training)
+# print(target)
 
 print("training...")
 
@@ -66,50 +60,41 @@ mlp_nn.fit(training, target)
 
 print("predicting...")
 
-# # WARN: DEMO/TEST PRINTS
-# # Predicting “ANYONE”
-# print(knn_model.predict([str_to_ord_arr("ANYONE")])) # Output: 0 (English)
-# print(svm_model.predict([str_to_ord_arr("ANYONE")])) # Output: 0 (English)
-# print(mlp_nn.predict([str_to_ord_arr("ANYONE")])) # Output: 0 (English)
-#
-# # Predicting “BÄRGET”
-# print(knn_model.predict([str_to_ord_arr("BÄRGET")])) # Output: 1 (German)
-# print(svm_model.predict([str_to_ord_arr("BÄRGET")])) # Output: 1 (German)
-# print(mlp_nn.predict   ([str_to_ord_arr("BÄRGET")])) # Output: 1 (German)
-
 # Note that predict() must also take a 2D array as our training data was a 2D array.
-
-# TODO:
-# - impl a func that gets a random word from a random lang and tests it
-# - can test specific word or specific lang as well
-# since i have all the data about the word, i can print the expected as well
-# that is, print a nice log/test message
 def test_n_words(testwords_df, n):
     test_words = testwords_df.sample(n)
-    print(test_words)
+    correct_preds = {"knn": 0, "svm": 0, "mlp": 0}
 
-test_n_words(testing_df, 5)
+    for _, word in test_words.iterrows():
+        knn_pred = knn_model.predict([word["ord"]])
+        svm_pred = svm_model.predict([word["ord"]])
+        mlp_pred = mlp_nn.predict([word["ord"]])
 
-# TODO: GRAPH ACTUAL RESULTS
+        correct_preds["knn"] += int(knn_pred[0] == word["label"])
+        correct_preds["svm"] += int(svm_pred[0] == word["label"])
+        correct_preds["mlp"] += int(mlp_pred[0] == word["label"])
 
-# #NOTE: TUTORIAL PROVIDED CODE
-#
-# # Label text for each graph
-# labels = ("KNN", "SVM", "MLP")
-#
-# # Numbers that you want the bars to represent
-# value = [81, 90, 71]
-#
-# # Title of the plot
-# plt.title("Model Accuracy")
-#
-# # Label for the x values of the bar graph
-# plt.xlabel("Accuracy")
-#
-# # Drawing the bar graph
-# y_pos = np.arange(len(labels))
-# plt.barh(y_pos, value, align="center", alpha=0.5)
-# plt.yticks(y_pos, labels)
-#
-# # Display the graph
-# plt.show()
+        print(f"predicting for word \"{word['word']}\" -> expected language = {word['language']}:{word['label']}")
+        print(f"  knn prediction: {knn_pred}")
+        print(f"  svn prediction: {svm_pred}")
+        print(f"  mlp prediction: {mlp_pred}")
+
+    accuracies = {k: (v / n) * 100 for k, v in correct_preds.items()}
+    print(f"Accuracy over {n} words:")
+    print(f"  knn: {accuracies['knn']:.1f}%")
+    print(f"  svm: {accuracies['svm']:.1f}%")
+    print(f"  mlp: {accuracies['mlp']:.1f}%")
+
+    return list(accuracies.values())
+
+
+models_accuracies = test_n_words(testing_df, 100)
+
+plt.title("Model Accuracy")
+plt.xlabel("Accuracy")
+labels = ("KNN", "SVM", "MLP") # ylabels
+
+y_pos = np.arange(len(labels))
+plt.barh(y_pos, models_accuracies, align="center", alpha=0.5)
+plt.yticks(y_pos, labels)
+plt.show()
