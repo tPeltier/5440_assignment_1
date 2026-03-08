@@ -23,7 +23,7 @@ def add_ord_arr(df):
     df["ord"] = df["word"].apply(lambda word: [ord(char) for char in word])
     return df
 
-def lang_to_lable(df):
+def lang_to_label(df):
     langs = {lang: i for i, lang in enumerate(df["language"].unique())}
     df["label"] = df["language"].map(langs)
     return df
@@ -40,7 +40,7 @@ print(preprocessing_df.sample(10))
 
 preprocessing_df = prune_len(preprocessing_df, 5)
 preprocessing_df = add_ord_arr(preprocessing_df)
-preprocessing_df = lang_to_lable(preprocessing_df)
+preprocessing_df = lang_to_label(preprocessing_df)
 print(preprocessing_df.sample(10))
 
 testing_df = preprocessing_df.sample(frac=0.2)
@@ -80,10 +80,15 @@ print("predicting...")
 # Note that predict() must also take a 2D array as our training data was a 2D array.
 
 # TODO:
-# - impl a func that gest a random word from a random lang and tests it
+# - impl a func that gets a random word from a random lang and tests it
 # - can test specific word or specific lang as well
 # since i have all the data about the word, i can print the expected as well
 # that is, print a nice log/test message
+def test_n_words(testwords_df, n):
+    test_words = testwords_df.sample(n)
+    print(test_words)
+
+test_n_words(testing_df, 5)
 
 # TODO: GRAPH ACTUAL RESULTS
 
