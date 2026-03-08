@@ -5,7 +5,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn import svm
 from sklearn.neural_network import MLPClassifier
 
-print("preprocessing...")
+print("importing...")
 
 eng_url = "https://raw.githubusercontent.com/tPeltier/5440_assignment_1/refs/heads/main/english.txt"
 eng_df = pd.read_csv(eng_url, header=None, names=["word"])
@@ -19,6 +19,10 @@ french_url = "https://raw.githubusercontent.com/tPeltier/5440_assignment_1/refs/
 french_df = pd.read_csv(french_url, header=None, names=["word"], encoding="latin-1")
 french_df["language"] = "french"
 preprocessing_df = pd.concat([eng_df, germ_df, french_df]).reset_index(drop=True)
+
+print("importing complete")
+
+print("preprocessing...")
 
 def prune_len(df, word_size):
     return df[df["word"].str.len() == word_size].reset_index(drop=True)
@@ -53,6 +57,8 @@ target = np.array(training_df["label"].tolist())
 # print(training)
 # print(target)
 
+print("preprocessing complete")
+
 print("training...")
 
 #NOTE: TUTORIAL PROVIDED CODE
@@ -63,7 +69,7 @@ knn_model.fit(training, target)
 svm_model.fit(training, target)
 mlp_nn.fit(training, target)
 
-print("predicting...")
+print("training complete")
 
 # Note that predict() must also take a 2D array as our training data was a 2D array.
 def test_n_words(testwords_df, n):
@@ -84,6 +90,14 @@ def test_n_words(testwords_df, n):
         print(f"  svn prediction: {svm_pred}")
         print(f"  mlp prediction: {mlp_pred}")
 
+    return correct_preds
+
+print("predicting...")
+number_of_words_to_test = 100
+correct_preds = test_n_words(testing_df, number_of_words_to_test)
+print("predicting complete")
+
+def print_accuracies(correct_preds, n):
     accuracies = {k: (v / n) * 100 for k, v in correct_preds.items()}
     print(f"Accuracy over {n} words:")
     print(f"  knn: {accuracies['knn']:.1f}%")
@@ -92,8 +106,7 @@ def test_n_words(testwords_df, n):
 
     return list(accuracies.values())
 
-
-models_accuracies = test_n_words(testing_df, 100)
+models_accuracies = print_accuracies(correct_preds, number_of_words_to_test)
 
 plt.title("Model Accuracy")
 plt.xlabel("Accuracy")
