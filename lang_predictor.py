@@ -32,30 +32,31 @@ def add_ord_arr(df):
     return df
 
 def lang_to_label(df):
-    langs = {lang: i for i, lang in enumerate(df["language"].unique())}
+    # WARN: ADJUST DICT ACCORDING TO LANGS
+    langs = {"english": 0, "german": 1, "french": 2}
     df["label"] = df["language"].map(langs)
     return df
-
-def str_to_ord_arr(word):
-    return [ord(char) for char in word.lower()]
-
-# print(preprocessing_df.sample(10))
 
 preprocessing_df = prune_len(preprocessing_df, 5)
 preprocessing_df = add_ord_arr(preprocessing_df)
 preprocessing_df = lang_to_label(preprocessing_df)
-# print(preprocessing_df.sample(10))
 
-testing_df = preprocessing_df.sample(frac=0.2)
-# print(testing_df.info())
+print(preprocessing_df.sample(10))
+
+# most of the 5 letter words are english, so we force an even % split with groupby ( english still dominates but less so )
+testing_df = preprocessing_df.groupby("language").sample(frac=0.2, random_state=31) # gives seeded, reproducable randomness
+
+# will ignore the fact that english dominates the 5 letter word category
+#testing_df = preprocessing_df.sample(frac=0.2, random_state=31) # gives seeded, reproducable randomness
+
+#testing_df = preprocessing_df.sample(frac=0.2) # uncomment for true randomness
 
 training_df = preprocessing_df.drop(testing_df.index)
-# print(training_df.info())
 
 training = np.array(training_df["ord"].tolist())
 target = np.array(training_df["label"].tolist())
-# print(training)
-# print(target)
+
+print(preprocessing_df["language"].value_counts())
 
 print("preprocessing complete")
 
@@ -71,12 +72,13 @@ mlp_nn.fit(training, target)
 
 print("training complete")
 
-# Note that predict() must also take a 2D array as our training data was a 2D array.
 def test_n_words(testwords_df, n):
-    test_words = testwords_df.sample(n)
+    test_words = testwords_df.sample(n, random_state=31) # gives seeded, reproducable randomness
+    #test_words = testwords_df.sample(n) # uncomment for true randomness
     correct_preds = {"knn": 0, "svm": 0, "mlp": 0}
 
     for _, word in test_words.iterrows():
+        # Note that predict() must also take a 2D array as our training data was a 2D array.
         knn_pred = knn_model.predict([word["ord"]])
         svm_pred = svm_model.predict([word["ord"]])
         mlp_pred = mlp_nn.predict([word["ord"]])
@@ -87,7 +89,7 @@ def test_n_words(testwords_df, n):
 
         print(f"predicting for word \"{word['word']}\" -> expected language = {word['language']}:{word['label']}")
         print(f"  knn prediction: {knn_pred}")
-        print(f"  svn prediction: {svm_pred}")
+        print(f"  svm prediction: {svm_pred}")
         print(f"  mlp prediction: {mlp_pred}")
 
     return correct_preds
