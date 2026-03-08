@@ -7,11 +7,16 @@ from sklearn.neural_network import MLPClassifier
 
 print("preprocessing...")
 
-eng_df = pd.read_csv("./english.txt", header=None, names=["word"])
+eng_url = "https://raw.githubusercontent.com/tPeltier/5440_assignment_1/refs/heads/main/english.txt"
+eng_df = pd.read_csv(eng_url, header=None, names=["word"])
 eng_df["language"] = "english"
-germ_df = pd.read_csv("./german.txt", header=None, names=["word"], encoding="latin-1")
+
+germ_url = "https://raw.githubusercontent.com/tPeltier/5440_assignment_1/refs/heads/main/german.txt"
+germ_df = pd.read_csv(germ_url, header=None, names=["word"], encoding="latin-1")
 germ_df["language"] = "german"
-french_df = pd.read_csv("./french.txt", header=None, names=["word"], encoding="latin-1")
+
+french_url = "https://raw.githubusercontent.com/tPeltier/5440_assignment_1/refs/heads/main/french.txt"
+french_df = pd.read_csv(french_url, header=None, names=["word"], encoding="latin-1")
 french_df["language"] = "french"
 preprocessing_df = pd.concat([eng_df, germ_df, french_df]).reset_index(drop=True)
 
