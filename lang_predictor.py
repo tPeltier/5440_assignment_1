@@ -56,7 +56,8 @@ training_df = preprocessing_df.drop(testing_df.index)
 training = np.array(training_df["ord"].tolist())
 target = np.array(training_df["label"].tolist())
 
-print(preprocessing_df["language"].value_counts())
+print(training_df["language"].value_counts())
+print(testing_df["language"].value_counts())
 
 print("preprocessing complete")
 
